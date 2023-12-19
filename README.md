@@ -1,6 +1,6 @@
 # Working with SQLite databases
 
-COMP0034 2023-24 Week 2 coding activities
+_COMP0034 2023-24 Week 2 coding activities_
 
 ## 1. Preparation and introduction
 
@@ -105,6 +105,8 @@ adding extra features to it as needed.
 
 ## Initialise the SQLAlchemy extension
 
+**FROM THIS POINT THE FILE IS JUST NOTES AND NOT IN ORDER, DO NOT USE!**
+
 Create a python file called `model.py`. This will contain classes that map to your database tables.
 
 Add the following code:
@@ -125,7 +127,7 @@ Add the following to `model.py`
 
 https://flask.palletsprojects.com/en/2.3.x/patterns/sqlalchemy/#flask-sqlalchemy-extension
 
-Not the foloowing!
+Not the following!
 
 ```
 from sqlalchemy.orm import Mapped, mapped_column
