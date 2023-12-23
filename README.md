@@ -164,8 +164,8 @@ from paralympics import db
 
 class User(db.Model):
     id: Mapped[int] = mapped_column(db.Integer, primary_key=True)
-    email: Mapped[str] = mapped_column(db.String, unique=True, nullable=False)
-    password: Mapped[str] = mapped_column(db.String, unique=True, nullable=False)
+    email: Mapped[str] = mapped_column(db.Text, unique=True, nullable=False)
+    password: Mapped[str] = mapped_column(db.Text, unique=True, nullable=False)
 ```
 
 Add the following code to create two classes that represents the data in the databas, Region and Event.
@@ -207,13 +207,13 @@ class Event(db.Model):
     participants_m: Mapped[int] = mapped_column(db.Integer, nullable=True)
     participants_f: Mapped[int] = mapped_column(db.Integer, nullable=True)
     participants: Mapped[int] = mapped_column(db.Integer, nullable=True)
-    highlights: Mapped[str] = mapped_column(db.Integer, nullable=True)
+    highlights: Mapped[str] = mapped_column(db.Text, nullable=True)
 
 
 class User(db.Model):
     id: Mapped[int] = mapped_column(db.Integer, primary_key=True)
-    email: Mapped[str] = mapped_column(db.String, unique=True, nullable=False)
-    password: Mapped[str] = mapped_column(db.String, unique=True, nullable=False)
+    email: Mapped[str] = mapped_column(db.Text, unique=True, nullable=False)
+    password: Mapped[str] = mapped_column(db.Text, unique=True, nullable=False)
 
     def __init__(self, email: str, password: str):
         """
