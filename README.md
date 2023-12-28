@@ -168,7 +168,7 @@ class User(db.Model):
     password: Mapped[str] = mapped_column(db.Text, unique=True, nullable=False)
 ```
 
-Add the following code to create two classes that represents the data in the databas, Region and Event.
+Add the following code to create two classes that represents the tables in the database, Region and Event.
 
 ```python
 # Adapted from https://flask-sqlalchemy.palletsprojects.com/en/3.1.x/quickstart/#define-models
@@ -198,7 +198,7 @@ class Event(db.Model):
     country: Mapped[str] = mapped_column(db.Text, nullable=False)
     host: Mapped[str] = mapped_column(db.Text, nullable=False)
     NOC: Mapped[str] = mapped_column(ForeignKey("region.NOC"))
-     # add relationship to the parent table, Region, which has a relationship called 'events'
+    # add relationship to the parent table, Region, which has a relationship called 'events'
     region: Mapped["Region"] = relationship("Region", back_populates="events")
     start: Mapped[str] = mapped_column(db.Text, nullable=True)
     end: Mapped[str] = mapped_column(db.Text, nullable=True)
@@ -234,24 +234,31 @@ The relationship between the two tables is defined used the primary and foreign 
 as follows:
 
 ```python
+from typing import List
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from paralympics import db
+
 
 # non-Key/relationship column details have been omitted from the classes below for brevity
-# one-to-many relationship from Region to Event https://docs.sqlalchemy.org/en/20/orm/basic_relationships.html
+# one-to-many relationship from Region to Event 
+# https://docs.sqlalchemy.org/en/20/orm/basic_relationships.html#one-to-many
 
 class Region(db.Model):
     __tablename__ = "region"
     # Primary key attribute
-    NOC = db.Column(db.Text, primary_key=True)
-    # add a relationship to Event. The Region then has a record of the Events associated with it.
-    events = db.relationship("Event", back_populates="region")
+    NOC: Mapped[str] = mapped_column(db.Text, primary_key=True)
+    # Add a relationship to Event. The Region then has a record of the Events associated with it. 
+    # This references the relationship 'region' in the Event table.
+    events: Mapped[List["Event"]] = relationship(back_populates="region")
 
 
 class Event(db.Model):
     __tablename__ = "event"
-    # ForeignKey attribute. The ForeignKey is linked to the Region primary key using mapped_column(String, ForeignKey())
+    # add ForeignKey that maps to the primary key of the Region table
     NOC: Mapped[str] = mapped_column(ForeignKey("region.NOC"))
-    # add relationship to Region. The Event then has a record of the parent Region associated with the Event. 
-    region: Mapped[Region] = relationship("Region", back_populates="events")  
+    # add relationship to Region, this references the relationship 'events' that is in the Region table
+    region: Mapped["Region"] = relationship(back_populates="events")
 ```
 
 ## Update the `create_app()` function to generate the database tables
@@ -310,67 +317,95 @@ a file called `paralympics.sqlite`.
 
 ## Add data to the database
 
-There are many ways to add data to a database using Python. This method assumes you created database as above and are
-then going to add the data to the existing tables using Pandas DataFrame as you are already familiar with this from
-COMP0035.
+There are many ways to add data to a database using Python.
 
-The basic workflow is:
+This method assumes you created database as above and are then going to add the data from the .csv files to the existing
+tables using SQLAlchemy. The code will be called every time the app runs.
 
-1. Create a SQLite database engine that connects to the database file
-2. Create a cursor object that can execute SQL queries
-3. Read the .csv or .xlsx into a pandas DataFrame
-4. Save the pandas DataFrame to the database tables
-5. Close the database connection
-
-The code to do this is in `data/add_data.py`.
+1. Add the following code to the end of `__init__.py`:
 
 ```python
+import csv
 from pathlib import Path
-import sqlite3
-import pandas as pd
 
-if __name__ == '__main__':
-    # 1. Create a SQLite database engine that connects to the database file
-    db_file = Path(__file__).parent.parent.joinpath("instance", "paralympics.sqlite")
-    connection = sqlite3.connect(db_file)
 
-    # 2. Create a cursor object to execute SQL queries
-    cursor = connection.cursor()
+def add_data_from_csv():
+    """Adds data to the database if it does not already exist."""
 
-    # 3. Read the .csv or .xlsx files into pandas DataFrames
+    # Add import here and not at the top of the file to avoid circular import issues
+    from paralympics.models import Region, Event
 
-    # Read the noc_regions data to a pandas dataframe
-    # Additional string to read "" as a null value https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html
-    na_values = ["", ]
-    noc_file = Path(__file__).parent.parent.joinpath("data", "noc_regions.csv")
-    noc_regions = pd.read_csv(noc_file, keep_default_na=False, na_values=na_values)
+    # If there are no regions in the database, then add them
+    first_region = db.session.execute(db.select(Region)).first()
+    if not first_region:
+        print("Start adding region data to the database")
+        noc_file = Path(__file__).parent.parent.joinpath("data", "noc_regions.csv")
+        with open(noc_file, 'r') as file:
+            csv_reader = csv.reader(file)
+            next(csv_reader)  # Skip header row
+            for row in csv_reader:
+                # row[0] is the first column, row[1] is the second column
+                r = Region(NOC=row[0], region=row[1], notes=row[2])
+                db.session.add(r)
+            db.session.commit()
 
-    # Read the paralympics event data to a pandas dataframe
-    event_file = Path(__file__).parent.parent.joinpath("data", "paralympic_events.csv")
-    paralympics = pd.read_csv(event_file)
+    # If there are no Events, then add them
+    first_event = db.session.execute(db.select(Event)).first()
+    if not first_event:
+        print("Start adding event data to the database")
+        event_file = Path(__file__).parent.parent.joinpath("data", "paralympic_events.csv")
+        with open(event_file, 'r') as file:
+            csv_reader = csv.reader(file)
+            next(csv_reader)  # Skip header row
+            for row in csv_reader:
+                # row[0] is the first column, row[1] is the second column etc
+                e = Event(type=row[0],
+                          year=row[1],
+                          country=row[2],
+                          host=row[3],
+                          NOC=row[4],
+                          start=row[5],
+                          end=row[6],
+                          duration=row[7],
+                          disabilities_included=row[8],
+                          countries=row[9],
+                          events=row[10],
+                          sports=row[11],
+                          participants_m=row[12],
+                          participants_f=row[13],
+                          participants=row[14],
+                          highlights=row[15])
+                db.session.add(e)
+            db.session.commit()
 
-    # 4. Write the data from the pandas DataFrame to the database tables
-
-    # if_exists="replace" If there is data in the table, replace it
-    #  index=False Do not write the pandas index column to the database table
-    noc_regions.to_sql("region", connection, if_exists="replace", index=False)
-    paralympics.to_sql("event", connection, if_exists="replace", index=False)
-
-    # 5. Close the database connection
-    connection.close()
 ```
 
-There is a second Python file that also creates the database tables, `create_db_add_data`. You do not need this for this
-activity, it is included in case you want to take this approach for your coursework. The modified workflow for this is:
+2. Update the `create_app()` function to call the `add_data_from_csv()` function after the tables are created
 
-1. Create a SQLite database engine that connects to the database file
-2. Create a cursor object that can execute SQL queries
-3. Define the tables using SQL
-4. Execute the SQL queries to create the tables
-5. Commit the changes to the database (this saves the tables created in the previous step)
-6. Read the .csv or .xlsx files into pandas DataFrames
-7. Write the pandas DataFrame contents to the database tables
-8. Close the database connection
+```python
+def create_app(test_config=None):
+    # ... CODE OMITTED FOR BREVITY HERE ...
+
+    with app.app_context():
+        # Create the database and tables if they don't already exist
+        db.create_all()
+        # Add the data to the database if not already added
+        add_data_from_csv()
+
+    # ... CODE OMITTED FOR BREVITY HERE ...    
+
+    return app
+```
+
+Another approach would be to create the database using Python code as a one-off action. This may be preferable if there
+is
+a lot of data to load and the code takes a while to execute.
+
+The file `data\create_db_add_data` contains an example of this approach. You do not need this for this activity, it is
+included in case you want to take this approach for your coursework.
+
+These are not the only options; you will find blog posts and tutorials that offer other approaches that you could use
+instead.
 
 ## Reading
 
@@ -383,5 +418,6 @@ There are many aspects not covered in this tutorial that you could investigate.
 - Alternative Python class definitions using [Python Dataclasses](https://docs.python.org/3/library/dataclasses.html)
   with [SQLAlchemy `MappedAsDataclass`](https://flask-sqlalchemy.palletsprojects.com/en/3.1.x/models/#initializing-the-base-class))
 - [Reflecting tables](https://flask-sqlalchemy.palletsprojects.com/en/3.1.x/models/#reflecting-tables) can be used if
-  you have a database with the data in.
-- [Python sqlite3 tutorial](https://docs.python.org/3/library/sqlite3.html#tutorial).
+  you have a database with the data already in.
+- [Python sqlite3 tutorial](https://docs.python.org/3/library/sqlite3.html#tutorial) may be useful if you create the
+  database and add data separately from the Flask application code.
