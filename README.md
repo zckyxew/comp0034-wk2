@@ -27,20 +27,17 @@ more easily create Python classes that map to database tables; and handles the d
 using Python functions. This follows a design pattern called ORM, Object Relational Mapper. An ORM encapsulates, or
 wraps, data stored in a database into an object that can be used in Python.
 
-Flask-SQLAlchemy works with many database formats but will not work directly with .csv/.xlsx file. You will use SQLite
+Flask-SQLAlchemy works with many database formats but will not work directly with .csv/.xlsx file. You will use a SQLite database
 which stores the tables and data in a single file which is convenient for the coursework.
-
-There are various ways to save csv as sqlite. The following uses libraries you should be familiar with from COMP0035,
-namely pandas and pathlib; and introduces some SQLAlchemy code.
 
 ## Step 1: Change the Flask app to be created using the Flask application factory pattern
 
-You will create a function that allows you to create a Flask app and then enable that app to use extensions such as
+Create a function that allows you to create a Flask app and then enable that app to use extensions such as
 Flask-SQLAlchemy and to add configuration parameters.
 
 This is an [application factory](https://flask.palletsprojects.com/en/2.3.x/patterns/appfactories/) pattern. Like a
 factory production line, you create the app, then you pass it along a production line
-adding extra features to it as needed.
+adding extra 'features' to it as needed.
 
 1. Open `paralympics/__init__.py`
 2. The following is based on the `create_app()` function from
