@@ -172,6 +172,7 @@ Add the following code to create two classes that represents the data in the dat
 
 ```python
 # Adapted from https://flask-sqlalchemy.palletsprojects.com/en/3.1.x/quickstart/#define-models
+from typing import List
 from sqlalchemy import Integer, String, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from paralympics import db
@@ -184,7 +185,9 @@ class Region(db.Model):
     NOC: Mapped[str] = mapped_column(db.Text, primary_key=True)
     region: Mapped[str] = mapped_column(db.Text, nullable=False)
     notes: Mapped[str] = mapped_column(db.Text, nullable=True)
-    events: Mapped[list["Event"]] = relationship(back_populates="region")
+    # one-to-many relationship with Event, the relationship in Event is called 'region'
+    # https://docs.sqlalchemy.org/en/20/orm/basic_relationships.html#one-to-many
+    events: Mapped[List["Event"]] = relationship(back_populates="region")
 
 
 class Event(db.Model):
@@ -195,7 +198,8 @@ class Event(db.Model):
     country: Mapped[str] = mapped_column(db.Text, nullable=False)
     host: Mapped[str] = mapped_column(db.Text, nullable=False)
     NOC: Mapped[str] = mapped_column(ForeignKey("region.NOC"))
-    region: Mapped[Region] = relationship("Region", back_populates="events")
+     # add relationship to the parent table, Region, which has a relationship called 'events'
+    region: Mapped["Region"] = relationship("Region", back_populates="events")
     start: Mapped[str] = mapped_column(db.Text, nullable=True)
     end: Mapped[str] = mapped_column(db.Text, nullable=True)
     duration: Mapped[int] = mapped_column(db.Integer, nullable=True)
