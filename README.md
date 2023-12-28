@@ -1,4 +1,4 @@
-# Working with SQLite databases
+# Working with SQLite databases in Flask with Flask-SQLAlchemy
 
 _COMP0034 2023-24 Week 2 coding activities_
 
