@@ -8,10 +8,16 @@ dependencies = [
 
 [build-system]
 requires = [
-    "setuptools>=65.0",
-    "setuptools-scm[toml]>=6.2.3",
+    "setuptools",
+    "setuptools-scm[toml]",
 ]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["paralympics"]  # list of folders that contain the packages (["."] by default)
+include = ["paralympics*"]  # package names should match these glob patterns (["*"] by default)
+exclude = ["tests*"]  # exclude packages matching these glob patterns (empty by default)
+namespaces = false  # to disable scanning PEP 420 namespaces (true by default)
 
 [tool.pytest.ini_options]
 addopts = "--verbose"
