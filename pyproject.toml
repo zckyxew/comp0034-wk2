@@ -1,33 +1,18 @@
 [project]
-name = "comp0034-2"
+name = "paralympics"
 version = "1.0.0"
 description = "COMP0034 Week 2 coding activities"
 dependencies = [
     "flask",
+    "Flask-SQLAlchemy"
 ]
 
 [build-system]
 requires = [
     "setuptools",
-    "setuptools-scm[toml]",
+    "setuptools-scm",
 ]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools.packages.find]
-where = ["paralympics"]  # list of folders that contain the packages (["."] by default)
-include = ["paralympics*"]  # package names should match these glob patterns (["*"] by default)
-exclude = ["tests*"]  # exclude packages matching these glob patterns (empty by default)
-namespaces = false  # to disable scanning PEP 420 namespaces (true by default)
-
-[tool.pytest.ini_options]
-addopts = "--verbose"
-python_files = ["test_*.py", "*_test.py", "test/*.py"]
-python_classes = ["Test"]
-python_functions = ["test"]
-testpaths = ["tests"]
-xfail_strict = true
-filterwarnings = [
-    "error",
-    # pytest's own futurewarnings
-    "ignore::pytest.PytestExperimentalApiWarning",
-]
+[tool.setuptools]
+packages = ["paralympics"]

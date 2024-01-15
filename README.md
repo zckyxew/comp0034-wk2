@@ -227,7 +227,7 @@ class User(db.Model):
         self.password = password
 ```
 
-The relationship between the two tables is defined used the primary and foreign keys with the `relationship` function
+`The relationship between the two tables is defined used the primary and foreign keys with the `relationship` function
 as follows:
 
 ```python
@@ -237,7 +237,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from paralympics import db
 
 
-# non-Key/relationship column details have been omitted from the classes below for brevity
+# non-Key/relations`hip column details have been omitted from the classes below for brevity
 # one-to-many relationship from Region to Event 
 # https://docs.sqlalchemy.org/en/20/orm/basic_relationships.html#one-to-many
 
@@ -356,6 +356,7 @@ def add_data_from_csv():
             next(csv_reader)  # Skip header row
             for row in csv_reader:
                 # row[0] is the first column, row[1] is the second column etc
+                # For int data types, if there is no value, set to None rather than ''
                 e = Event(type=row[0],
                           year=row[1],
                           country=row[2],
@@ -363,14 +364,14 @@ def add_data_from_csv():
                           NOC=row[4],
                           start=row[5],
                           end=row[6],
-                          duration=row[7],
+                          duration=row[7] or None,
                           disabilities_included=row[8],
-                          countries=row[9],
-                          events=row[10],
-                          sports=row[11],
-                          participants_m=row[12],
-                          participants_f=row[13],
-                          participants=row[14],
+                          countries=row[9] or None,
+                          events=row[10] or None,
+                          sports=row[11] or None,
+                          participants_m=row[12] or None,
+                          participants_f=row[13] or None,
+                          participants=row[14] or None,
                           highlights=row[15])
                 db.session.add(e)
             db.session.commit()
