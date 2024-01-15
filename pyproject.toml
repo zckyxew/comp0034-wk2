@@ -1,5 +1,5 @@
 [project]
-name = "paralympics"
+name = "comp0034-wk2"
 version = "1.0.0"
 description = "COMP0034 Week 2 coding activities"
 dependencies = [
